@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ניהול תקציב</title>
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="תקציב">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1b1c1e" media="(prefers-color-scheme: dark)">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="vendor/chart/chart.umd.min.js" defer></script>
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="#dashboard" class="brand"><span class="brand-icon">₪</span> ניהול תקציב</a>
+      <nav class="nav">
+        <a href="#dashboard" data-page="dashboard">לוח בקרה</a>
+        <a href="#upload" data-page="upload">ייבוא מהבנק</a>
+        <a href="#settings" data-page="settings">הגדרות</a>
+      </nav>
+      <button type="button" class="btn btn-primary btn-add" data-add-tx title="קיצור מקלדת: +">＋ הוספת תנועה</button>
+    </div>
+  </header>
+
+  <main id="main" class="container"></main>
+
+  <button type="button" class="fab" data-add-tx aria-label="הוספת תנועה">＋</button>
+</body>
+</html>
