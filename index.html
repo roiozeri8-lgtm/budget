@@ -11,28 +11,36 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="תקציב">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#1b1c1e" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#101114" media="(prefers-color-scheme: dark)">
   <meta name="format-detection" content="telephone=no">
+  <link rel="preload" href="vendor/fonts/heebo-hebrew.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/styles.css">
   <script src="vendor/chart/chart.umd.min.js" defer></script>
   <script type="module" src="js/app.js"></script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <a href="#dashboard" class="brand"><span class="brand-icon">₪</span> ניהול תקציב</a>
-      <nav class="nav">
-        <a href="#dashboard" data-page="dashboard">לוח בקרה</a>
-        <a href="#upload" data-page="upload">ייבוא מהבנק</a>
-        <a href="#settings" data-page="settings">הגדרות</a>
+  <div class="app">
+    <aside class="sidebar">
+      <a href="#home" class="brand"><img src="icons/icon-192.png" alt="" width="34" height="34"><span>ניהול תקציב</span></a>
+      <button type="button" class="btn btn-primary btn-block btn-lg" data-add-tx title="קיצור מקלדת: +"><span data-icon="plus"></span> הוספת תנועה</button>
+      <nav class="side-nav" aria-label="ניווט ראשי">
+        <a href="#home" data-page="home"><span data-icon="home"></span>בית</a>
+        <a href="#tx" data-page="tx"><span data-icon="list"></span>תנועות</a>
+        <a href="#import" data-page="import"><span data-icon="import"></span>ייבוא</a>
+        <a href="#settings" data-page="settings"><span data-icon="settings"></span>הגדרות</a>
       </nav>
-      <button type="button" class="btn btn-primary btn-add" data-add-tx title="קיצור מקלדת: +">＋ הוספת תנועה</button>
-    </div>
-  </header>
+      <p class="side-foot"><span data-icon="shield"></span> הנתונים נשמרים רק במכשיר הזה</p>
+    </aside>
+    <main id="main" class="main"></main>
+  </div>
 
-  <main id="main" class="container"></main>
-
-  <button type="button" class="fab" data-add-tx aria-label="הוספת תנועה">＋</button>
+  <nav class="tabbar" aria-label="ניווט">
+    <a href="#home" data-page="home"><span data-icon="home"></span><span>בית</span></a>
+    <a href="#tx" data-page="tx"><span data-icon="list"></span><span>תנועות</span></a>
+    <button type="button" class="tab-add" data-add-tx aria-label="הוספת תנועה"><span data-icon="plus"></span></button>
+    <a href="#import" data-page="import"><span data-icon="import"></span><span>ייבוא</span></a>
+    <a href="#settings" data-page="settings"><span data-icon="settings"></span><span>הגדרות</span></a>
+  </nav>
 </body>
 </html>

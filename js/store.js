@@ -5,8 +5,8 @@
 // keeps the newest version of each record. Transactions created by a recurring item have a
 // fixed id (`<recurringId>-<YYYY-MM>`) so two devices never create the same month twice.
 import * as db from './db.js';
-import { DEFAULT_CATEGORIES, DEFAULT_RULES, RULES_VERSION, REMOVED_RULE_IDS, DEFAULT_CARD_KEYWORDS, FALLBACK_CATEGORY } from './defaults.js';
-import { currentMonth, addMonths, dateInMonth, round2 } from './format.js';
+import { DEFAULT_CATEGORIES, DEFAULT_ICON, DEFAULT_RULES, RULES_VERSION, REMOVED_RULE_IDS, DEFAULT_CARD_KEYWORDS, FALLBACK_CATEGORY } from './defaults.js';
+import { currentMonth, addMonths, dateInMonth, round2, todayISO, daysInMonth } from './format.js';
 
 export const state = {
   transactions: [],
@@ -25,7 +25,7 @@ export const uid = () => (crypto.randomUUID ? crypto.randomUUID()
 const now = () => new Date().toISOString();
 
 /** Settings that describe this device, not the user's data — never synced. */
-const LOCAL_SETTINGS = new Set(['seeded', 'rulesVersion', 'tombstones', 'settingsMeta', 'lastBackup', 'lastSync']);
+const LOCAL_SETTINGS = new Set(['seeded', 'rulesVersion', 'tombstones', 'settingsMeta', 'lastBackup', 'lastSync', 'lock', 'reminderSnooze']);
 const SYNC_STORES = ['transactions', 'categories', 'rules', 'recurring'];
 
 // ---------- loading ----------
@@ -53,7 +53,40 @@ export async function load() {
     if (removed.length) { await db.remove('rules', removed); state.rules = state.rules.filter((r) => !removed.includes(r.id)); }
     await setSetting('rulesVersion', RULES_VERSION, false);
   }
+  // categories from older versions get their icon
+  const missingIcon = state.categories.filter((c) => !c.icon);
+  if (missingIcon.length) {
+    for (const c of missingIcon) c.icon = DEFAULT_CATEGORIES.find((d) => d.id === c.id)?.icon || DEFAULT_ICON;
+    await db.put('categories', missingIcon);
+  }
   await generateRecurring(false);
+}
+
+// ---------- budget month ----------
+// A budget month may start on another day than the 1st (e.g. the 10th, when the salary arrives).
+// Month "2026-11" with start day 10 covers 10/11/2026 – 9/12/2026.
+
+export function monthStartDay() {
+  return Math.min(28, Math.max(1, Number(state.settings.monthStartDay) || 1));
+}
+
+export function budgetMonthOf(iso) {
+  const month = iso.slice(0, 7);
+  return Number(iso.slice(8, 10)) >= monthStartDay() ? month : addMonths(month, -1);
+}
+
+export function currentBudgetMonth() {
+  return budgetMonthOf(todayISO());
+}
+
+/** First and last date (ISO) of a budget month. */
+export function periodOf(month) {
+  const start = monthStartDay();
+  const pad = (n) => String(n).padStart(2, '0');
+  const from = `${month}-${pad(start)}`;
+  if (start === 1) return { from, to: `${month}-${pad(daysInMonth(month))}` };
+  const next = addMonths(month, 1);
+  return { from, to: `${next}-${pad(start - 1)}` };
 }
 
 // ---------- lookups ----------
@@ -78,7 +111,8 @@ export function expenseValue(t) {
 }
 
 export function transactionsOfMonth(month) {
-  return state.transactions.filter((t) => t.date.startsWith(month));
+  const { from, to } = periodOf(month);
+  return state.transactions.filter((t) => t.date >= from && t.date <= to);
 }
 
 // ---------- deletions (tombstones) ----------
@@ -105,6 +139,7 @@ function normalizeTx(tx) {
     isCardPayment: tx.type === 'income' ? false : !!tx.isCardPayment,
     refund: tx.type === 'income' ? false : !!tx.refund, // a credit/refund on an expense category: reduces expenses
     recurringId: tx.recurringId || null,
+    installment: tx.installment || null, // { plan, n, of } — one payment of a purchase in installments
     createdAt: tx.createdAt || now(),
     updatedAt: now(),
   };
@@ -199,7 +234,10 @@ export async function setSetting(key, value, notify = true) {
 
 /**
  * A recurring template: { id, type, amount, description, categoryId, note, isCardPayment,
- *   day, startMonth, lastGenerated, active }.
+ *   day, startMonth, lastGenerated, active, mode, matchKey }.
+ * mode 'auto' (default): a transaction is created every month.
+ * mode 'expected': a known monthly charge that arrives with the bank data (subscription, standing order);
+ *   nothing is created — it only feeds the forecast and the "upcoming" list until the real charge appears.
  * Every month after `lastGenerated` up to the current month gets one transaction.
  */
 export async function saveRecurring(rec) {
@@ -228,7 +266,7 @@ export async function generateRecurring(notify = true) {
   const newTxs = [];
   const updated = [];
   for (const rec of state.recurring) {
-    if (!rec.active) continue;
+    if (!rec.active || rec.mode === 'expected') continue; // 'expected' items arrive from the bank, never generated
     let month = rec.lastGenerated ? addMonths(rec.lastGenerated, 1) : rec.startMonth;
     let changed = false;
     while (month <= thisMonth) {

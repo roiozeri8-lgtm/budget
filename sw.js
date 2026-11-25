@@ -2,7 +2,7 @@
 // App code: network first (updates arrive whenever online), cache as fallback.
 // vendor/ (big, never changes): cache first.
 // Only the app's own files are cached — never any bank data (that lives in IndexedDB).
-const CACHE = 'budget-app-v1';
+const CACHE = 'budget-app-v2';
 
 const CORE = [
   './',
@@ -15,16 +15,21 @@ const CORE = [
   'js/format.js',
   'js/defaults.js',
   'js/categorize.js',
+  'js/analytics.js',
+  'js/icons.js',
+  'js/lock.js',
   'js/ui.js',
   'js/views/dashboard.js',
   'js/views/txlist.js',
   'js/views/txform.js',
   'js/views/settings.js',
   'js/views/upload.js',
-  'js/import/bank-file.js',
+  'js/views/ruleoffer.js',
   'js/import/ocr.js',
+  'js/import/inbox.js',
   'vendor/chart/chart.umd.min.js',
-  'vendor/xlsx/xlsx.full.min.js',
+  'vendor/fonts/heebo-hebrew.woff2',
+  'vendor/fonts/heebo-latin.woff2',
   'icons/apple-touch-icon.png',
   'icons/icon-192.png',
   'icons/icon-512.png',

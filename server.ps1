@@ -19,7 +19,8 @@ $vendor = @(
   @('vendor\lang\heb.traineddata.gz',                   'https://cdn.jsdelivr.net/npm/@tesseract.js-data/heb/4.0.0_best_int/heb.traineddata.gz'),
   @('vendor\lang\eng.traineddata.gz',                   'https://cdn.jsdelivr.net/npm/@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz'),
   @('vendor\chart\chart.umd.min.js',                    'https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js'),
-  @('vendor\xlsx\xlsx.full.min.js',                     'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js')
+  @('vendor\fonts\heebo-hebrew.woff2',                  'https://cdn.jsdelivr.net/npm/@fontsource-variable/heebo@5/files/heebo-hebrew-wght-normal.woff2'),
+  @('vendor\fonts\heebo-latin.woff2',                   'https://cdn.jsdelivr.net/npm/@fontsource-variable/heebo@5/files/heebo-latin-wght-normal.woff2')
 )
 $missing = $vendor | Where-Object { -not (Test-Path (Join-Path $root $_[0])) }
 if ($missing) {
@@ -56,6 +57,7 @@ $mime = @{
   '.svg'  = 'image/svg+xml'
   '.png'  = 'image/png'
   '.ico'  = 'image/x-icon'
+  '.woff2' = 'font/woff2'
   '.wasm' = 'application/wasm'
   '.gz'   = 'application/octet-stream'
 }

@@ -129,6 +129,47 @@ export function dateInMonth(month, day) {
   return `${month}-${pad(Math.min(day, daysInMonth(month)))}`;
 }
 
+/** "2026-01-31", +1 -> "2026-02-28" */
+export function addMonthsToDate(iso, delta) {
+  return dateInMonth(addMonths(iso.slice(0, 7), delta), Number(iso.slice(8, 10)));
+}
+
+export function addDays(iso, delta) {
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(y, m - 1, d + delta);
+  return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}`;
+}
+
+/** Whole days from a to b (ISO dates). */
+export function daysBetween(a, b) {
+  const [y1, m1, d1] = a.split('-').map(Number);
+  const [y2, m2, d2] = b.split('-').map(Number);
+  return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 864e5);
+}
+
+const dayFmt = new Intl.DateTimeFormat('he-IL', { weekday: 'long', day: 'numeric', month: 'long' });
+
+/** "2026-11-18" -> "יום רביעי, 18 בנובמבר" (or "היום" / "אתמול") */
+export function formatDayHeader(iso) {
+  const today = todayISO();
+  if (iso === today) return 'היום';
+  if (iso === addDays(today, -1)) return 'אתמול';
+  const [y, m, d] = iso.split('-').map(Number);
+  return dayFmt.format(new Date(y, m - 1, d));
+}
+
+/** "2026-11-18" -> "18.11" */
+export function formatShortDate(iso) {
+  return `${Number(iso.slice(8, 10))}.${Number(iso.slice(5, 7))}`;
+}
+
+/** 12345 -> "12.3K ₪" for chart axes */
+export function compactMoney(n) {
+  const a = Math.abs(n);
+  const s = a >= 1000 ? `${(a / 1000).toFixed(a >= 10000 ? 0 : 1)}K` : String(Math.round(a));
+  return `${n < 0 ? '-' : ''}${s} ₪`;
+}
+
 // ---------- text ----------
 
 export function escapeHtml(s) {
